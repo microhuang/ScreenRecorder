@@ -45,7 +45,13 @@ public class RESAudioClient {
     public boolean start(RESFlvDataCollecter flvDataCollecter) {
         synchronized (syncOp) {
             softAudioCore.start(flvDataCollecter);
-            audioRecord.startRecording();
+            try {
+                audioRecord.startRecording();
+            }catch (IllegalStateException ex){
+                //模拟器测试不可用
+                LogTools.e("录音失败");
+                return false;
+            }
             audioRecordThread = new AudioRecordThread();
             audioRecordThread.start();
             LogTools.d("RESAudioClient,start()");

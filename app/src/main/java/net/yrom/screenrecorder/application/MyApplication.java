@@ -10,7 +10,7 @@ import android.content.Context;
 public class MyApplication extends Application {
 
     static {
-        System.loadLibrary("screenrecorderrtmp");
+        System.loadLibrary("jrtmp");
     }
 
     private static Context sContext;

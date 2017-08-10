@@ -136,8 +136,12 @@ public class RtmpStreamingSender implements Runnable {
         synchronized (syncWriteMsgNum) {
             //LAKETODO optimize
             if (writeMsgNum <= maxQueueLength) {
-                frameQueue.add(flvData);
-                ++writeMsgNum;
+                try {
+                    frameQueue.add(flvData);
+                    ++writeMsgNum;
+                }catch(IllegalStateException ex){
+                    LogTools.d("1 senderQueue is full,abandon");
+                }
             } else {
                 LogTools.d("senderQueue is full,abandon");
             }
