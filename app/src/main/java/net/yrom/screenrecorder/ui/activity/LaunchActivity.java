@@ -16,18 +16,18 @@ import butterknife.OnClick;
 
 public class LaunchActivity extends AppCompatActivity {
 
-    @BindView(R.id.btn_screen_record)
-    Button btnScreenRecord;
-    @BindView(R.id.btn_camera_record)
-    Button btnCameraRecord;
+//    @BindView(R.id.btn_screen_record)
+//    Button btnScreenRecord;
+//    @BindView(R.id.btn_camera_record)
+//    Button btnCameraRecord;
 
     private static final int REQUEST_STREAM = 1;
     private static String[] PERMISSIONS_STREAM = {
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE
     };
-
     boolean authorized = false;
 
     @Override
@@ -54,9 +54,11 @@ public class LaunchActivity extends AppCompatActivity {
         int CAMERA_permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
         int RECORD_AUDIO_permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO);
         int WRITE_EXTERNAL_STORAGE_permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int READ_EXTERNAL_STORAGE_permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
         if (CAMERA_permission != PackageManager.PERMISSION_GRANTED ||
                 RECORD_AUDIO_permission != PackageManager.PERMISSION_GRANTED ||
-                WRITE_EXTERNAL_STORAGE_permission != PackageManager.PERMISSION_GRANTED) {
+                WRITE_EXTERNAL_STORAGE_permission != PackageManager.PERMISSION_GRANTED ||
+                READ_EXTERNAL_STORAGE_permission != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
                     this,
                     PERMISSIONS_STREAM,
@@ -74,7 +76,8 @@ public class LaunchActivity extends AppCompatActivity {
         if (requestCode == REQUEST_STREAM) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED &&
                     grantResults[1] == PackageManager.PERMISSION_GRANTED &&
-                    grantResults[2] == PackageManager.PERMISSION_GRANTED) {
+                    grantResults[2] == PackageManager.PERMISSION_GRANTED &&
+                    grantResults[3] == PackageManager.PERMISSION_GRANTED) {
                 authorized = true;
             }
         }

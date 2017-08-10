@@ -49,6 +49,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import java.io.File;
+import android.os.Environment;
+
 public class ScreenRecordActivity extends Activity implements View.OnClickListener {
     private static final int REQUEST_CODE = 1;
     private Button mButton;
@@ -121,8 +124,12 @@ public class ScreenRecordActivity extends Activity implements View.OnClickListen
             return;
         }
 
-        mVideoRecorder = new ScreenRecorder(collecter, RESFlvData.VIDEO_WIDTH, RESFlvData.VIDEO_HEIGHT, RESFlvData.VIDEO_BITRATE, 1, mediaProjection);
+        File file = new File(Environment.getExternalStorageDirectory(),
+                "record-" + RESFlvData.VIDEO_WIDTH + "x" + RESFlvData.VIDEO_HEIGHT + "-" + System.currentTimeMillis() + ".mp4");
+
+        mVideoRecorder = new ScreenRecorder(collecter, RESFlvData.VIDEO_WIDTH, RESFlvData.VIDEO_HEIGHT, RESFlvData.VIDEO_BITRATE, 1, mediaProjection, file.getAbsolutePath());
         mVideoRecorder.start();
+
         audioClient.start(collecter);
 
         executorService = Executors.newCachedThreadPool();

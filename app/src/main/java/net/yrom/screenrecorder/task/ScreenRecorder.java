@@ -47,6 +47,7 @@ public class ScreenRecorder extends Thread {
     private int mHeight;
     private int mBitRate;
     private int mDpi;
+    private String mDstPath;
     private MediaProjection mMediaProjection;
     // parameters for the encoder
     private static final String MIME_TYPE = "video/avc"; // H.264 Advanced Video Coding
@@ -62,7 +63,7 @@ public class ScreenRecorder extends Thread {
     private VirtualDisplay mVirtualDisplay;
     private RESFlvDataCollecter mDataCollecter;
 
-    public ScreenRecorder(RESFlvDataCollecter dataCollecter, int width, int height, int bitrate, int dpi, MediaProjection mp) {
+    public ScreenRecorder(RESFlvDataCollecter dataCollecter, int width, int height, int bitrate, int dpi, MediaProjection mp, String dstPath) {
         super(TAG);
         mWidth = width;
         mHeight = height;
@@ -71,6 +72,7 @@ public class ScreenRecorder extends Thread {
         mMediaProjection = mp;
         startTime = 0;
         mDataCollecter = dataCollecter;
+        mDstPath = dstPath;
     }
 
     /**
