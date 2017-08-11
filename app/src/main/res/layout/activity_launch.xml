@@ -19,6 +19,12 @@
         android:text="Camera record" />
 
     <ListView
+        android:id="@+id/lst_support_audio"
+        android:layout_width="match_parent"
+        android:layout_height="200dp">
+    </ListView>
+
+    <ListView
         android:id="@+id/lst_support_codec"
         android:layout_width="match_parent"
         android:layout_height="447dp" />

@@ -27,6 +27,8 @@ public class LaunchActivity extends AppCompatActivity {
 //    Button btnScreenRecord;
 //    @BindView(R.id.btn_camera_record)
 //    Button btnCameraRecord;
+    @BindView(R.id.lst_support_audio)
+    ListView lstAudio;
     @BindView(R.id.lst_support_codec)
     ListView lstCodec;
     private ArrayAdapter<String> arrayAdapter;
@@ -50,6 +52,8 @@ public class LaunchActivity extends AppCompatActivity {
         ArrayList<String> arrData = SupportAvcCodec();
         arrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,(String[])(arrData.toArray(new String[arrData.size()])));
         lstCodec.setAdapter(arrayAdapter);
+
+        lstAudio.setAdapter(new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,new String[]{"外录","内录","全局"}));
 
         verifyPermissions();
     }
