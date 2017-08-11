@@ -17,4 +17,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Camera record" />
+
+    <ListView
+        android:id="@+id/lst_support_codec"
+        android:layout_width="match_parent"
+        android:layout_height="447dp" />
 </LinearLayout>

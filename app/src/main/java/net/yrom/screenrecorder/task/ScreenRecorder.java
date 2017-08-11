@@ -21,6 +21,7 @@ import android.hardware.display.VirtualDisplay;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
+import android.media.MediaMuxer;
 import android.media.projection.MediaProjection;
 import android.util.Log;
 import android.view.Surface;
@@ -50,20 +51,25 @@ public class ScreenRecorder extends Thread {
     private String mDstPath;
     private MediaProjection mMediaProjection;
     // parameters for the encoder
-    private static final String MIME_TYPE = "video/avc"; // H.264 Advanced Video Coding
+    private static final String MIME_TYPE = "video/avc";//"video/avc"  H.264 Advanced Video Coding        //video/hevc   H.265
     private static final int FRAME_RATE = 30; // 30 fps
     private static final int IFRAME_INTERVAL = 2; // 2 seconds between I-frames
     private static final int TIMEOUT_US = 10000;
 
     private MediaCodec mEncoder;
     private Surface mSurface;
+    private MediaMuxer mMuxer;
     private long startTime = 0;
     private AtomicBoolean mQuit = new AtomicBoolean(false);
     private MediaCodec.BufferInfo mBufferInfo = new MediaCodec.BufferInfo();
     private VirtualDisplay mVirtualDisplay;
     private RESFlvDataCollecter mDataCollecter;
 
-    public ScreenRecorder(RESFlvDataCollecter dataCollecter, int width, int height, int bitrate, int dpi, MediaProjection mp, String dstPath) {
+    private boolean mMuxerStarted = false;
+    private int mVideoTrackIndex = -1;
+
+    //rtmp发送
+    public ScreenRecorder(RESFlvDataCollecter dataCollecter, int width, int height, int bitrate, int dpi, MediaProjection mp) {
         super(TAG);
         mWidth = width;
         mHeight = height;
@@ -72,6 +78,17 @@ public class ScreenRecorder extends Thread {
         mMediaProjection = mp;
         startTime = 0;
         mDataCollecter = dataCollecter;
+    }
+
+    //写文件
+    public ScreenRecorder(String dstPath, int width, int height, int bitrate, int dpi, MediaProjection mp) {
+        super(TAG);
+        mWidth = width;
+        mHeight = height;
+        mBitRate = bitrate;
+        mDpi = dpi;
+        mMediaProjection = mp;
+        startTime = 0;
         mDstPath = dstPath;
     }
 
@@ -87,6 +104,9 @@ public class ScreenRecorder extends Thread {
         try {
             try {
                 prepareEncoder();
+                if(!mDstPath.isEmpty()) {
+                    mMuxer = new MediaMuxer(mDstPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);//混合器
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -111,7 +131,7 @@ public class ScreenRecorder extends Thread {
         format.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE);
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, IFRAME_INTERVAL);
         Log.d(TAG, "created video format: " + format);
-        mEncoder = MediaCodec.createEncoderByType(MIME_TYPE);
+        mEncoder = MediaCodec.createEncoderByType(MIME_TYPE);//指定编码类型
         mEncoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         mSurface = mEncoder.createInputSurface();
         Log.d(TAG, "created input surface: " + mSurface);
@@ -122,33 +142,55 @@ public class ScreenRecorder extends Thread {
         while (!mQuit.get()) {
             int eobIndex = mEncoder.dequeueOutputBuffer(mBufferInfo, TIMEOUT_US);
             switch (eobIndex) {
+                case MediaCodec.INFO_TRY_AGAIN_LATER:
+                    // no output available yet
+                    Log.d(TAG, "no output from encoder available");
+//                    LogTools.d("VideoSenderThread,MediaCodec.INFO_TRY_AGAIN_LATER");
+                    try {
+                        // wait 10ms
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        ;
+                    }
+                    break;
                 case MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED:
                     LogTools.d("VideoSenderThread,MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED");
-                    break;
-                case MediaCodec.INFO_TRY_AGAIN_LATER:
-//                    LogTools.d("VideoSenderThread,MediaCodec.INFO_TRY_AGAIN_LATER");
                     break;
                 case MediaCodec.INFO_OUTPUT_FORMAT_CHANGED:
                     LogTools.d("VideoSenderThread,MediaCodec.INFO_OUTPUT_FORMAT_CHANGED:" +
                             mEncoder.getOutputFormat().toString());
-                    sendAVCDecoderConfigurationRecord(0, mEncoder.getOutputFormat());
+                    if(!mDstPath.isEmpty()){
+                        resetOutputFormat();
+                    }else {
+                        sendAVCDecoderConfigurationRecord(0, mEncoder.getOutputFormat());
+                    }
                     break;
                 default:
                     LogTools.d("VideoSenderThread,MediaCode,eobIndex=" + eobIndex);
-                    if (startTime == 0) {
-                        startTime = mBufferInfo.presentationTimeUs / 1000;
-                    }
-                    /**
-                     * we send sps pps already in INFO_OUTPUT_FORMAT_CHANGED
-                     * so we ignore MediaCodec.BUFFER_FLAG_CODEC_CONFIG
-                     */
-                    if (mBufferInfo.flags != MediaCodec.BUFFER_FLAG_CODEC_CONFIG && mBufferInfo.size != 0) {
-                        ByteBuffer realData = mEncoder.getOutputBuffers()[eobIndex];
-                        realData.position(mBufferInfo.offset + 4);
-                        realData.limit(mBufferInfo.offset + mBufferInfo.size);
-                        sendRealData((mBufferInfo.presentationTimeUs / 1000) - startTime, realData);
+                    if(!mDstPath.isEmpty()){
+                        if (!mMuxerStarted) {
+                            throw new IllegalStateException("MediaMuxer dose not call addTrack(format) ");
+                        }
+                        encodeToVideoTrack(eobIndex);
+                    }else {
+                        if (startTime == 0) {
+                            startTime = mBufferInfo.presentationTimeUs / 1000;
+                        }
+                        /**
+                         * we send sps pps already in INFO_OUTPUT_FORMAT_CHANGED
+                         * so we ignore MediaCodec.BUFFER_FLAG_CODEC_CONFIG
+                         */
+                        //
+                        if (mBufferInfo.flags != MediaCodec.BUFFER_FLAG_CODEC_CONFIG && mBufferInfo.size != 0) {
+                            ByteBuffer realData = mEncoder.getOutputBuffers()[eobIndex];
+                            realData.position(mBufferInfo.offset + 4);
+                            realData.limit(mBufferInfo.offset + mBufferInfo.size);
+                            sendRealData((mBufferInfo.presentationTimeUs / 1000) - startTime, realData);
+                        }
                     }
                     mEncoder.releaseOutputBuffer(eobIndex, false);
+//                    mEncoder.releaseOutputBuffer(eobIndex, true);
+//                    mEncoder.releaseOutputBuffer(eobIndex, timestamp);
                     break;
             }
         }
@@ -167,6 +209,11 @@ public class ScreenRecorder extends Thread {
         if (mMediaProjection != null) {
             mMediaProjection.stop();
         }
+        if (mMuxer != null) {
+            mMuxer.stop();
+            mMuxer.release();
+            mMuxer = null;
+        }
     }
 
 
@@ -174,6 +221,45 @@ public class ScreenRecorder extends Thread {
         return !mQuit.get();
     }
 
+    private void encodeToVideoTrack(int index) {
+        ByteBuffer encodedData = mEncoder.getOutputBuffer(index);
+
+        if ((mBufferInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
+            // The codec config data was pulled out and fed to the muxer when we got
+            // the INFO_OUTPUT_FORMAT_CHANGED status.
+            // Ignore it.
+            Log.d(TAG, "ignoring BUFFER_FLAG_CODEC_CONFIG");
+            mBufferInfo.size = 0;
+        }
+        if (mBufferInfo.size == 0) {
+            Log.d(TAG, "info.size == 0, drop it.");
+            encodedData = null;
+        } else {
+            Log.d(TAG, "got buffer, info: size=" + mBufferInfo.size
+                    + ", presentationTimeUs=" + mBufferInfo.presentationTimeUs
+                    + ", offset=" + mBufferInfo.offset);
+        }
+        if (encodedData != null) {
+            encodedData.position(mBufferInfo.offset);
+            encodedData.limit(mBufferInfo.offset + mBufferInfo.size);
+            mMuxer.writeSampleData(mVideoTrackIndex, encodedData, mBufferInfo); //混合器写文件
+            Log.i(TAG, "sent " + mBufferInfo.size + " bytes to muxer...");
+        }
+    }
+
+    private void resetOutputFormat() {
+        // should happen before receiving buffers, and should only happen once
+        if (mMuxerStarted) {
+            throw new IllegalStateException("output format already changed!");
+        }
+        MediaFormat newFormat = mEncoder.getOutputFormat();
+
+        Log.i(TAG, "output format changed.\n new format: " + newFormat.toString());
+        mVideoTrackIndex = mMuxer.addTrack(newFormat);
+        mMuxer.start();
+        mMuxerStarted = true;
+        Log.i(TAG, "started media muxer, videoIndex=" + mVideoTrackIndex);
+    }
 
     private void sendAVCDecoderConfigurationRecord(long tms, MediaFormat format) {
         byte[] AVCDecoderConfigurationRecord = Packager.H264Packager.generateAVCDecoderConfigurationRecord(format);

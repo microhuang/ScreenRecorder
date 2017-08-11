@@ -2,11 +2,18 @@ package net.yrom.screenrecorder.ui.activity;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
+
+import java.util.ArrayList;
 
 import net.yrom.screenrecorder.R;
 
@@ -20,6 +27,9 @@ public class LaunchActivity extends AppCompatActivity {
 //    Button btnScreenRecord;
 //    @BindView(R.id.btn_camera_record)
 //    Button btnCameraRecord;
+    @BindView(R.id.lst_support_codec)
+    ListView lstCodec;
+    private ArrayAdapter<String> arrayAdapter;
 
     private static final int REQUEST_STREAM = 1;
     private static String[] PERMISSIONS_STREAM = {
@@ -35,6 +45,12 @@ public class LaunchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launch);
         ButterKnife.bind(this);
+
+//        String[] arrayData = {"苹果","香蕉","梨子","西瓜","桃子"};
+        ArrayList<String> arrData = SupportAvcCodec();
+        arrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,(String[])(arrData.toArray(new String[arrData.size()])));
+        lstCodec.setAdapter(arrayAdapter);
+
         verifyPermissions();
     }
 
@@ -68,6 +84,24 @@ public class LaunchActivity extends AppCompatActivity {
         } else {
             authorized = true;
         }
+    }
+
+    private ArrayList<String> SupportAvcCodec(){
+        ArrayList<String> arrCodec = new ArrayList<String>();
+        if(Build.VERSION.SDK_INT>=18){
+            for(int j = MediaCodecList.getCodecCount() - 1; j >= 0; j--){
+                MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(j);
+                String[] types = codecInfo.getSupportedTypes();
+                for (int i = 0; i < types.length; i++) {
+                    arrCodec.add(types[i]);
+//                    if (types[i].equalsIgnoreCase("video/avc")) {
+//                        return true;
+//                    }
+                }
+            }
+        }
+//        return false;
+        return arrCodec;
     }
 
     @Override

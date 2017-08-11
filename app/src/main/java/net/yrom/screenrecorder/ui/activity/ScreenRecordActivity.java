@@ -30,6 +30,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import net.yrom.screenrecorder.IScreenRecorderAidlInterface;
@@ -45,12 +46,16 @@ import net.yrom.screenrecorder.task.ScreenRecorder;
 import net.yrom.screenrecorder.tools.LogTools;
 
 import java.util.ArrayList;
+import android.widget.ArrayAdapter;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import java.io.File;
 import android.os.Environment;
+import android.os.Build;
+import android.media.MediaCodecList;
+import android.media.MediaCodecInfo;
 
 public class ScreenRecordActivity extends Activity implements View.OnClickListener {
     private static final int REQUEST_CODE = 1;
@@ -92,6 +97,7 @@ public class ScreenRecordActivity extends Activity implements View.OnClickListen
         mButton = (Button) findViewById(R.id.button);
         mRtmpAddET = (EditText) findViewById(R.id.et_rtmp_address);
         mButton.setOnClickListener(this);
+
         mMediaProjectionManager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
     }
 
@@ -127,7 +133,10 @@ public class ScreenRecordActivity extends Activity implements View.OnClickListen
         File file = new File(Environment.getExternalStorageDirectory(),
                 "record-" + RESFlvData.VIDEO_WIDTH + "x" + RESFlvData.VIDEO_HEIGHT + "-" + System.currentTimeMillis() + ".mp4");
 
-        mVideoRecorder = new ScreenRecorder(collecter, RESFlvData.VIDEO_WIDTH, RESFlvData.VIDEO_HEIGHT, RESFlvData.VIDEO_BITRATE, 1, mediaProjection, file.getAbsolutePath());
+        //rtmp发送
+//        mVideoRecorder = new ScreenRecorder(collecter, RESFlvData.VIDEO_WIDTH, RESFlvData.VIDEO_HEIGHT, RESFlvData.VIDEO_BITRATE, 1, mediaProjection);
+        //写文件
+        mVideoRecorder = new ScreenRecorder(file.getAbsolutePath(), RESFlvData.VIDEO_WIDTH, RESFlvData.VIDEO_HEIGHT, RESFlvData.VIDEO_BITRATE, 1, mediaProjection);
         mVideoRecorder.start();
 
         audioClient.start(collecter);
@@ -139,7 +148,6 @@ public class ScreenRecordActivity extends Activity implements View.OnClickListen
         Toast.makeText(this, "Screen recorder is running...", Toast.LENGTH_SHORT).show();
         moveTaskToBack(true);
     }
-
 
     @Override
     public void onClick(View v) {
