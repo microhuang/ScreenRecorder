@@ -27,5 +27,5 @@
     <ListView
         android:id="@+id/lst_support_codec"
         android:layout_width="match_parent"
-        android:layout_height="447dp" />
+        android:layout_height="match_parent" />
 </LinearLayout>

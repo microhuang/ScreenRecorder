@@ -14,12 +14,19 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Collections;
 
 import net.yrom.screenrecorder.R;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+
+import android.media.MediaFormat;
+import android.media.MediaCodec;
+import java.io.IOException;
+import android.text.TextUtils;
 
 public class LaunchActivity extends AppCompatActivity {
 
@@ -48,10 +55,19 @@ public class LaunchActivity extends AppCompatActivity {
         setContentView(R.layout.activity_launch);
         ButterKnife.bind(this);
 
+//        try {
+//            getAvailableDecoders();
+//        }catch(Exception ex){
+//            ;
+//        }
+
 //        String[] arrayData = {"苹果","香蕉","梨子","西瓜","桃子"};
-        ArrayList<String> arrData = SupportAvcCodec();
-        arrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,(String[])(arrData.toArray(new String[arrData.size()])));
-        lstCodec.setAdapter(arrayAdapter);
+        ArrayList<ArrayList<String>> arrData = SupportAvcCodec();
+        ArrayList<String> arrEdata = arrData.get(0);
+        if(arrEdata!=null) {
+            arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, (String[]) (arrEdata.toArray(new String[arrEdata.size()])));
+            lstCodec.setAdapter(arrayAdapter);
+        }
 
         lstAudio.setAdapter(new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,new String[]{"外录","内录","全局"}));
 
@@ -90,14 +106,19 @@ public class LaunchActivity extends AppCompatActivity {
         }
     }
 
-    private ArrayList<String> SupportAvcCodec(){
-        ArrayList<String> arrCodec = new ArrayList<String>();
+    private ArrayList<ArrayList<String>> SupportAvcCodec(){
+        ArrayList<ArrayList<String>> ccc = new ArrayList<ArrayList<String>>();
+        ArrayList<String> arrECodec = new ArrayList<String>();
+        ArrayList<String> arrDCodec = new ArrayList<String>();
         if(Build.VERSION.SDK_INT>=18){
             for(int j = MediaCodecList.getCodecCount() - 1; j >= 0; j--){
                 MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(j);
                 String[] types = codecInfo.getSupportedTypes();
                 for (int i = 0; i < types.length; i++) {
-                    arrCodec.add(types[i]);
+                    if(codecInfo.isEncoder())
+                        arrECodec.add(types[i]);
+                    else
+                        arrDCodec.add(types[i]);
 //                    if (types[i].equalsIgnoreCase("video/avc")) {
 //                        return true;
 //                    }
@@ -105,7 +126,50 @@ public class LaunchActivity extends AppCompatActivity {
             }
         }
 //        return false;
-        return arrCodec;
+        ccc.add(arrECodec);
+        ccc.add(arrDCodec);
+        return ccc;
+    }
+
+//    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public static List<String> getAvailableEncoders() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            MediaCodecList mcl = new MediaCodecList(MediaCodecList.REGULAR_CODECS);
+            String encoderAsStr = mcl.findEncoderForFormat(MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, 1280, 720));
+//            String encoderAsStr = mcl.findDecoderForFormat(MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, 1280, 720));
+            List<String> encoders = new ArrayList<>();
+            for (MediaCodecInfo info : mcl.getCodecInfos()) {
+                if (info.isEncoder()) {
+                    if (info.getName().equals(encoderAsStr)) {
+                        encoders.add("*** " + info.getName() + ": " + TextUtils.join(", ", info.getSupportedTypes()));
+                    } else {
+                        encoders.add(info.getName() + ": " + TextUtils.join(", ", info.getSupportedTypes()));
+                    }
+                }
+            }
+            return encoders;
+        }
+        return Collections.emptyList();
+    }
+
+    public static List<String> getAvailableDecoders() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            MediaCodecList mcl = new MediaCodecList(MediaCodecList.REGULAR_CODECS);
+//            String encoderAsStr = mcl.findEncoderForFormat(MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, 1280, 720));
+            String encoderAsStr = mcl.findDecoderForFormat(MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, 1280, 720));
+            List<String> encoders = new ArrayList<>();
+            for (MediaCodecInfo info : mcl.getCodecInfos()) {
+                if (!info.isEncoder()) {
+                    if (info.getName().equals(encoderAsStr)) {
+                        encoders.add("*** " + info.getName() + ": " + TextUtils.join(", ", info.getSupportedTypes()));
+                    } else {
+                        encoders.add(info.getName() + ": " + TextUtils.join(", ", info.getSupportedTypes()));
+                    }
+                }
+            }
+            return encoders;
+        }
+        return Collections.emptyList();
     }
 
     @Override
@@ -121,3 +185,4 @@ public class LaunchActivity extends AppCompatActivity {
         }
     }
 }
+

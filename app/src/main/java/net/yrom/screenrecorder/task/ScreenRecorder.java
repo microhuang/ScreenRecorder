@@ -51,7 +51,7 @@ public class ScreenRecorder extends Thread {
     private String mDstPath;
     private MediaProjection mMediaProjection;
     // parameters for the encoder
-    private static final String MIME_TYPE = "video/avc";//"video/avc"  H.264 Advanced Video Coding        //video/hevc   H.265
+    private static final String MIME_TYPE = "video/hevc";//"video/avc"  H.264 Advanced Video Coding        //video/hevc   H.265
     private static final int FRAME_RATE = 30; // 30 fps
     private static final int IFRAME_INTERVAL = 1;//2; // 2 seconds between I-frames
     private static final int TIMEOUT_US = 10000;
@@ -132,6 +132,8 @@ public class ScreenRecorder extends Thread {
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, IFRAME_INTERVAL);
         Log.d(TAG, "created video format: " + format);
         mEncoder = MediaCodec.createEncoderByType(MIME_TYPE);//指定编码类型，模拟器h265上失败
+//        mEncoder = MediaCodec.createByCodecName("OMX.google.h264.encoder"); //OMX.qcom.video.encoder.avc   OMX.google.hevc.decoder
+//        mEncoder = MediaCodec.createByCodecName("OMX.google.hevc.encoder");
         mEncoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         mSurface = mEncoder.createInputSurface();
         Log.d(TAG, "created input surface: " + mSurface);
