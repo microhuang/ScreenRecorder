@@ -110,11 +110,14 @@ public class LaunchActivity extends AppCompatActivity {
         ArrayList<ArrayList<String>> ccc = new ArrayList<ArrayList<String>>();
         ArrayList<String> arrECodec = new ArrayList<String>();
         ArrayList<String> arrDCodec = new ArrayList<String>();
+        MediaCodecList mRegularCodecs = new MediaCodecList(MediaCodecList.REGULAR_CODECS);
+        MediaCodecInfo[] mRegularInfos = mRegularCodecs.getCodecInfos();
         if(Build.VERSION.SDK_INT>=18){
-            for(int j = MediaCodecList.getCodecCount() - 1; j >= 0; j--){
-                MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(j);
+            for(int j = mRegularInfos.length - 1; j >= 0; j--){
+                MediaCodecInfo codecInfo = mRegularInfos[j];
                 String[] types = codecInfo.getSupportedTypes();
-                for (int i = 0; i < types.length; i++) {
+                for (int i = 0; i < types.length; i++)
+                {
                     if(codecInfo.isEncoder())
                         arrECodec.add(types[i]);
                     else

@@ -51,7 +51,7 @@ public class ScreenRecorder extends Thread {
     private String mDstPath;
     private MediaProjection mMediaProjection;
     // parameters for the encoder
-    private static final String MIME_TYPE = "video/hevc";//"video/avc"  H.264 Advanced Video Coding        //video/hevc   H.265
+    private static final String MIME_TYPE = "video/avc";//"video/avc"  H.264 Advanced Video Coding        //video/hevc   H.265
     private static final int FRAME_RATE = 30; // 30 fps
     private static final int IFRAME_INTERVAL = 1;//2; // 2 seconds between I-frames
     private static final int TIMEOUT_US = 10000;
@@ -107,7 +107,9 @@ public class ScreenRecorder extends Thread {
                 if(!mDstPath.isEmpty()) {
                     mMuxer = new MediaMuxer(mDstPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);//混合器
                 }
-            } catch (IOException e) {
+            } catch (IOException e) {//if the codec cannot be created.
+                throw new RuntimeException(e);
+            } catch (IllegalArgumentException e) {//if type is not a valid mime type.
                 throw new RuntimeException(e);
             }
             mVirtualDisplay = mMediaProjection.createVirtualDisplay(TAG + "-display",
