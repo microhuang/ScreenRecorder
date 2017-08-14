@@ -35,7 +35,8 @@ public class RESAudioClient {
             resCoreParameters.audioRecoderChannelConfig = AudioFormat.CHANNEL_IN_MONO;
             resCoreParameters.audioRecoderSliceSize = resCoreParameters.mediacodecAACSampleRate / 10;
             resCoreParameters.audioRecoderBufferSize = resCoreParameters.audioRecoderSliceSize * 2;
-            resCoreParameters.audioRecoderSource = MediaRecorder.AudioSource.DEFAULT;
+//            resCoreParameters.audioRecoderSource = MediaRecorder.AudioSource.DEFAULT;
+            resCoreParameters.audioRecoderSource = MediaRecorder.AudioSource.REMOTE_SUBMIX;//内、需要高级权限
             resCoreParameters.audioRecoderSampleRate = resCoreParameters.mediacodecAACSampleRate;
             prepareAudio();
             return true;
