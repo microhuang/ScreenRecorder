@@ -104,7 +104,7 @@ public class ScreenRecorder extends Thread {
         try {
             try {
                 prepareEncoder();
-                if(!mDstPath.isEmpty()) {
+                if(mDstPath!=null && !mDstPath.isEmpty()) {
                     mMuxer = new MediaMuxer(mDstPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);//混合器
                 }
             } catch (IOException e) {//if the codec cannot be created.
@@ -113,7 +113,8 @@ public class ScreenRecorder extends Thread {
                 throw new RuntimeException(e);
             }
             mVirtualDisplay = mMediaProjection.createVirtualDisplay(TAG + "-display",
-                    mWidth, mHeight, mDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
+                    mWidth, mHeight, mDpi,
+                    DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,  //VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR
                     mSurface, null, null);
             Log.d(TAG, "created virtual display: " + mVirtualDisplay);
             recordVirtualDisplay();
@@ -128,7 +129,7 @@ public class ScreenRecorder extends Thread {
     private void prepareEncoder() throws IOException {
         MediaFormat format = MediaFormat.createVideoFormat(MIME_TYPE, mWidth, mHeight);
         format.setInteger(MediaFormat.KEY_COLOR_FORMAT,
-                MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar);//MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
+                MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);//MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar   MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
         format.setInteger(MediaFormat.KEY_BIT_RATE, mBitRate);
         format.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE);
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, IFRAME_INTERVAL);
@@ -163,7 +164,7 @@ public class ScreenRecorder extends Thread {
                 case MediaCodec.INFO_OUTPUT_FORMAT_CHANGED:
                     LogTools.d("VideoSenderThread,MediaCodec.INFO_OUTPUT_FORMAT_CHANGED:" +
                             mEncoder.getOutputFormat().toString());
-                    if(!mDstPath.isEmpty()){
+                    if(mDstPath!=null && !mDstPath.isEmpty()){
                         resetOutputFormat();
                     }else {
                         sendAVCDecoderConfigurationRecord(0, mEncoder.getOutputFormat());
@@ -171,7 +172,7 @@ public class ScreenRecorder extends Thread {
                     break;
                 default:
                     LogTools.d("VideoSenderThread,MediaCode,eobIndex=" + eobIndex);
-                    if(!mDstPath.isEmpty()){
+                    if(mDstPath!=null && !mDstPath.isEmpty()){
                         if (!mMuxerStarted) {
                             throw new IllegalStateException("MediaMuxer dose not call addTrack(format) ");
                         }
