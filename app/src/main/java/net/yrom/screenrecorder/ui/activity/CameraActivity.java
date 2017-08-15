@@ -2,8 +2,15 @@ package net.yrom.screenrecorder.ui.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
+import android.os.Handler;
+import android.Manifest;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraDevice;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
@@ -67,6 +74,7 @@ public class CameraActivity extends AppCompatActivity implements Camera.PreviewC
     private VideoEncoderThread encoderThread;
     private SurfaceHolder mSurfaceHolder;
     private Camera mCamera;
+    private CameraManager mCameraManager;
     private Camera.Parameters mCameraParams;
 
 
@@ -164,6 +172,18 @@ public class CameraActivity extends AppCompatActivity implements Camera.PreviewC
 
     private void openCamera(int cameraType, SurfaceHolder holder) {
         releaseCamera();
+
+//        mCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+//        try {
+//            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+//                return;
+//            }
+//            //打开摄像头
+//            mCameraManager.openCamera(mCameraManager.getCameraIdList()[0], stateCallback, new Handler(getMainLooper()));
+//        } catch (CameraAccessException e) {
+//            e.printStackTrace();
+//        }
+
         try {
             mCamera = Camera.open(cameraType);
         } catch (Exception e) {
@@ -186,6 +206,28 @@ public class CameraActivity extends AppCompatActivity implements Camera.PreviewC
         mCamera.setPreviewCallback(this);
         mCamera.startPreview();
     }
+
+//    private CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
+//        @Override
+//        public void onOpened(CameraDevice camera) {//打开摄像头
+//            mCameraDevice = camera;
+//            //开启预览
+//            takePreview();
+//        }
+//
+//        @Override
+//        public void onDisconnected(CameraDevice camera) {//关闭摄像头
+//            if (null != mCameraDevice) {
+//                mCameraDevice.close();
+//                Camera2Activity.this.mCameraDevice = null;
+//            }
+//        }
+//
+//        @Override
+//        public void onError(CameraDevice camera, int error) {//发生错误
+//            Toast.makeText(Camera2Activity.this, "摄像头开启失败", Toast.LENGTH_SHORT).show();
+//        }
+//    };
 
     private synchronized void releaseCamera() {
         if (mCamera != null) {
