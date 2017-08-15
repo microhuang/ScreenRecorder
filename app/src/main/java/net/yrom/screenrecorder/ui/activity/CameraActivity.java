@@ -104,6 +104,21 @@ public class CameraActivity extends AppCompatActivity implements Camera.PreviewC
 
     @OnClick(R.id.btn_push_to_rtmp)
     public void onViewClicked() {
+
+        if (streamingSender != null) {
+            stopScreenRecord();
+        } else {
+            startScreenRecord();
+        }
+
+    }
+
+    private void stopScreenRecord() {
+        btnPushToRtmp.setText("push to rtmp server");
+        return;
+    }
+
+    private void startScreenRecord() {
         rtmpAddr = etRtmpAddress.getText().toString().trim();
         if (TextUtils.isEmpty(rtmpAddr)) {
             Toast.makeText(this, "rtmp address cannot be null", Toast.LENGTH_SHORT).show();
@@ -118,6 +133,8 @@ public class CameraActivity extends AppCompatActivity implements Camera.PreviewC
             }
         };
         encoderThread.start();
+
+        btnPushToRtmp.setText("Stop Recorder");
     }
 
     public final boolean getStatus() {
