@@ -12,6 +12,10 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.hardware.Camera.CameraInfo;
+import android.hardware.Camera;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CameraAccessException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +74,14 @@ public class LaunchActivity extends AppCompatActivity {
         }
 
         lstAudio.setAdapter(new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,new String[]{"外录","内录","全局"}));
+
+        //得到摄像头的个数
+//        CameraManager mManager = (CameraManager)getSystemService(CAMERA_SERVICE);
+//        try {
+//            mManager.getCameraIdList();
+//        } catch (CameraAccessException e) {
+//            e.printStackTrace();
+//        }
 
         verifyPermissions();
     }

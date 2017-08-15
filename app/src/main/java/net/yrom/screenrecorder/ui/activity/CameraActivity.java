@@ -159,7 +159,7 @@ public class CameraActivity extends AppCompatActivity implements Camera.PreviewC
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        openCamera(Camera.CameraInfo.CAMERA_FACING_BACK, holder);
+        openCamera(Camera.CameraInfo.CAMERA_FACING_BACK, holder);//CAMERA_FACING_FRONT 前置
     }
 
     private void openCamera(int cameraType, SurfaceHolder holder) {
