@@ -59,12 +59,12 @@ public class RtmpStreamingSender implements Runnable {
                             break;
                         }
                         jniRtmpPointer = RtmpClient.open(rtmpAddr, true);
-                        final int openR = jniRtmpPointer == 0 ? 1 : 0;
-                        String serverIpAddr = null;
-                        if (openR == 0) {
-                            serverIpAddr = RtmpClient.getIpAddr(jniRtmpPointer);
-                            LogTools.d("server ip address = " + serverIpAddr);
-                        }
+//                        final int openR = jniRtmpPointer == 0 ? 1 : 0;
+//                        String serverIpAddr = null;
+//                        if (openR == 0) {
+//                            serverIpAddr = RtmpClient.getIpAddr(jniRtmpPointer);
+//                            LogTools.d("server ip address = " + serverIpAddr);
+//                        }
                         if (jniRtmpPointer == 0) {
                             break;
                         } else {
@@ -105,7 +105,7 @@ public class RtmpStreamingSender implements Runnable {
                             break;
                         }
                         final int closeR = RtmpClient.close(jniRtmpPointer);
-                        serverIpAddr = null;
+//                        serverIpAddr = null;
                         LogTools.e("close result = " + closeR);
                         break;
                 }
@@ -113,8 +113,10 @@ public class RtmpStreamingSender implements Runnable {
             }
 
         }
-        final int closeR = RtmpClient.close(jniRtmpPointer);
-        LogTools.e("close result = " + closeR);
+        if (!(jniRtmpPointer == 0)) {
+            final int closeR = RtmpClient.close(jniRtmpPointer);
+            LogTools.e("close result = " + closeR);
+        }
     }
 
     public void sendStart(String rtmpAddr) {

@@ -120,7 +120,10 @@ public class ScreenRecordActivity extends Activity implements View.OnClickListen
         RESFlvDataCollecter collecter = new RESFlvDataCollecter() {
             @Override
             public void collect(RESFlvData flvData, int type) {
-                streamingSender.sendFood(flvData, type);
+                if(streamingSender!=null)
+                {
+                    streamingSender.sendFood(flvData, type); //停止时空指针、段错误？
+                }
             }
         };
         coreParameters = new RESCoreParameters();
@@ -237,7 +240,7 @@ public class ScreenRecordActivity extends Activity implements View.OnClickListen
         mVideoRecorder = null;
         if (streamingSender != null) {
             streamingSender.sendStop();
-            streamingSender.quit();
+            streamingSender.quit(); //停止时空指针、段错误？
             streamingSender = null;
         }
         if (executorService != null) {

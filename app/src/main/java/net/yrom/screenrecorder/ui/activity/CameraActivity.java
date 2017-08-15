@@ -129,9 +129,10 @@ public class CameraActivity extends AppCompatActivity implements Camera.PreviewC
         MediaFormat format = MediaFormat.createVideoFormat(MIME_TYPE, VIDEO_WIDTH, VIDEO_HEIGHT);
         format.setInteger(MediaFormat.KEY_COLOR_FORMAT,
                 MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
-        format.setInteger(MediaFormat.KEY_BIT_RATE, mBitRate);
+        format.setInteger(MediaFormat.KEY_BIT_RATE, (int)(VIDEO_WIDTH * VIDEO_HEIGHT * 0.5));
         format.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE);
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, IFRAME_INTERVAL);
+        format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 1382400);//todo?
 
         Log.d(TAG, "created video format: " + format);
         mEncoder = MediaCodec.createEncoderByType(MIME_TYPE);
@@ -210,6 +211,7 @@ public class CameraActivity extends AppCompatActivity implements Camera.PreviewC
             if (rawframes.size() <= MAX_QUEUE_COUNT) {
                 rawframes.add(videoFrame);
             }
+//            rawframes.poll();//todo?
         }
 
         private byte[] get() {
@@ -228,8 +230,8 @@ public class CameraActivity extends AppCompatActivity implements Camera.PreviewC
                     if (inputBufferIndex >= 0) {
                         ByteBuffer inputBuffer = inputBuffers[inputBufferIndex];
                         inputBuffer.clear();
-                        int rotateDegree = 90;
-                        long begin = System.currentTimeMillis();
+//                        int rotateDegree = 90;
+//                        long begin = System.currentTimeMillis();
 //                        byte[] rotatedFrame;
 //                        rotatedFrame = scaleOrRotateData(rawframe.data, rotateDegree, rawframe.isPPTVideoFrame);
 

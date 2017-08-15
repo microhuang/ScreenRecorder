@@ -35,8 +35,8 @@ public class RESAudioClient {
             resCoreParameters.audioRecoderChannelConfig = AudioFormat.CHANNEL_IN_MONO;
             resCoreParameters.audioRecoderSliceSize = resCoreParameters.mediacodecAACSampleRate / 10;
             resCoreParameters.audioRecoderBufferSize = resCoreParameters.audioRecoderSliceSize * 2;
-//            resCoreParameters.audioRecoderSource = MediaRecorder.AudioSource.DEFAULT;
-            resCoreParameters.audioRecoderSource = MediaRecorder.AudioSource.REMOTE_SUBMIX;//内、需要高级权限
+            resCoreParameters.audioRecoderSource = MediaRecorder.AudioSource.DEFAULT;
+//            resCoreParameters.audioRecoderSource = MediaRecorder.AudioSource.REMOTE_SUBMIX;//内、需要高级权限
             resCoreParameters.audioRecoderSampleRate = resCoreParameters.mediacodecAACSampleRate;
             prepareAudio();
             return true;
@@ -95,11 +95,13 @@ public class RESAudioClient {
         int minBufferSize = AudioRecord.getMinBufferSize(resCoreParameters.audioRecoderSampleRate,
                 resCoreParameters.audioRecoderChannelConfig,
                 resCoreParameters.audioRecoderFormat);
+
         audioRecord = new AudioRecord(resCoreParameters.audioRecoderSource,
                 resCoreParameters.audioRecoderSampleRate,
                 resCoreParameters.audioRecoderChannelConfig,
                 resCoreParameters.audioRecoderFormat,
                 minBufferSize * 5);
+
         audioBuffer = new byte[resCoreParameters.audioRecoderBufferSize];
         if (AudioRecord.STATE_INITIALIZED != audioRecord.getState()) {
             LogTools.e("audioRecord.getState()!=AudioRecord.STATE_INITIALIZED!");
