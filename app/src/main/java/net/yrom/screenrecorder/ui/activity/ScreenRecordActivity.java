@@ -72,6 +72,8 @@ public class ScreenRecordActivity extends Activity implements View.OnClickListen
     private boolean isRecording;
     private RESCoreParameters coreParameters;
 
+    private ScreenRecordListenerService screenRecordListenerService;
+
     public static void launchActivity(Context ctx) {
         Intent it = new Intent(ctx, ScreenRecordActivity.class);
         it.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -82,12 +84,22 @@ public class ScreenRecordActivity extends Activity implements View.OnClickListen
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            recorderAidlInterface = IScreenRecorderAidlInterface.Stub.asInterface(service);
+//            recorderAidlInterface = IScreenRecorderAidlInterface.Stub.asInterface(service);
+            recorderAidlInterface = IScreenRecorderAidlInterface.Stub.asInterface(
+                ((ScreenRecordListenerService.TrackerBinder)service).getBinder()
+            );
+
+            screenRecordListenerService = ((ScreenRecordListenerService.TrackerBinder)service).getService();
+
+            //调用后台服务方法
+//            screenRecordListenerService.getMsg();
+
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             recorderAidlInterface = null;
+            screenRecordListenerService = null;
         }
     };
 
@@ -185,9 +197,13 @@ public class ScreenRecordActivity extends Activity implements View.OnClickListen
 
     private void startScreenRecordService() {
         if (mVideoRecorder != null && mVideoRecorder.getStatus()) {
+            //启动服务
             Intent runningServiceIT = new Intent(this, ScreenRecordListenerService.class);
             bindService(runningServiceIT, connection, BIND_AUTO_CREATE);
             startService(runningServiceIT);
+            //与后台服务交互
+//            screenRecordListenerService.getMsg();
+
             startAutoSendDanmaku();
         }
     }
@@ -221,8 +237,11 @@ public class ScreenRecordActivity extends Activity implements View.OnClickListen
     }
 
     private void stopScreenRecordService() {
+        //停止服务
         Intent runningServiceIT = new Intent(this, ScreenRecordListenerService.class);
+//        unbindService(connection);
         stopService(runningServiceIT);
+
         if (mVideoRecorder != null && mVideoRecorder.getStatus()) {
             Toast.makeText(this, "现在正在进行录屏直播哦", Toast.LENGTH_SHORT).show();
         }

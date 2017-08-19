@@ -18,6 +18,11 @@
         android:layout_height="wrap_content"
         android:text="Camera record" />
 
+    <WebView
+        android:id="@+id/web_1"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"></WebView>
+
     <ListView
         android:id="@+id/lst_support_audio"
         android:layout_width="match_parent"

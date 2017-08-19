@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -41,7 +42,18 @@ public class ScreenRecordListenerService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        return mBinder;
+//        return mBinder;
+        return new TrackerBinder();
+    }
+
+    public class TrackerBinder extends Binder {
+        public ScreenRecordListenerService getService() {
+            return ScreenRecordListenerService.this;
+        }
+        public IScreenRecorderAidlInterface.Stub getBinder()
+        {
+            return mBinder;
+        }
     }
 
     @Override
@@ -96,6 +108,12 @@ public class ScreenRecordListenerService extends Service {
         public void startScreenRecord(Intent bundleData) throws RemoteException {
 
         }
+
     };
+
+    public String getMsg()
+    {
+        return "TEST";
+    }
 
 }

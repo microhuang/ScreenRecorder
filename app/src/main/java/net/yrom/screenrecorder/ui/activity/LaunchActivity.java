@@ -9,6 +9,9 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -16,6 +19,9 @@ import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraAccessException;
+
+import android.content.pm.PackageInfo;
+import android.content.pm.ApplicationInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +48,9 @@ public class LaunchActivity extends AppCompatActivity {
     ListView lstAudio;
     @BindView(R.id.lst_support_codec)
     ListView lstCodec;
+    @BindView(R.id.web_1)
+    WebView web_1;
+
     private ArrayAdapter<String> arrayAdapter;
 
     private static final int REQUEST_STREAM = 1;
@@ -65,6 +74,12 @@ public class LaunchActivity extends AppCompatActivity {
 //            ;
 //        }
 
+//        getPackages();
+
+        web_1.getSettings().setDefaultTextEncodingName("UTF-8");
+        web_1.setWebViewClient(mClient);
+        web_1.loadData("<!DOCTYPE html><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>title</title><body>录制选项</body></html>","text/html; charset=UTF-8",null);
+
 //        String[] arrayData = {"苹果","香蕉","梨子","西瓜","桃子"};
         ArrayList<ArrayList<String>> arrData = SupportAvcCodec();
         ArrayList<String> arrEdata = arrData.get(0);
@@ -85,6 +100,13 @@ public class LaunchActivity extends AppCompatActivity {
 
         verifyPermissions();
     }
+
+    private WebViewClient mClient = new WebViewClient(){
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            return super.shouldOverrideUrlLoading(view, request);
+        }
+    };
 
     @OnClick({R.id.btn_screen_record, R.id.btn_camera_record})
     public void onViewClicked(View view) {
@@ -196,6 +218,29 @@ public class LaunchActivity extends AppCompatActivity {
                     grantResults[2] == PackageManager.PERMISSION_GRANTED &&
                     grantResults[3] == PackageManager.PERMISSION_GRANTED) {
                 authorized = true;
+            }
+        }
+    }
+
+
+    private void getPackages() {
+        // 获取已经安装的所有应用, PackageInfo　系统类，包含应用信息
+        List<PackageInfo> packages = getPackageManager().getInstalledPackages(0);
+        for (int i = 0; i < packages.size(); i++) {
+            PackageInfo packageInfo = packages.get(i);
+            if ((packageInfo.applicationInfo.flags&ApplicationInfo.FLAG_SYSTEM) == 0) { //非系统应用
+//                // AppInfo 自定义类，包含应用信息
+//                AppInfo appInfo = new AppInfo();
+//                appInfo.setAppName(
+//                        packageInfo.applicationInfo.loadLabel(getPackageManager()).toString());//获取应用名称
+//                appInfo.setPackageName(packageInfo.packageName); //获取应用包名，可用于卸载和启动应用
+//                appInfo.setVersionName(packageInfo.versionName);//获取应用版本名
+//                appInfo.setVersionCode(packageInfo.versionCode);//获取应用版本号
+//                appInfo.setAppIcon(packageInfo.applicationInfo.loadIcon(getPackageManager()));//获取应用图标
+//                System.out.println(appInfo.toString());
+//                mData.add(appInfo);
+            } else { // 系统应用
+
             }
         }
     }
